@@ -295,6 +295,13 @@ if ( ! class_exists( 'WooLu' ) ) {
             define( 'WOOLU_PLUGIN_DIR', dirname( WOOLU_PLUGIN_BASENAME ) );
             define( 'WOOLU_PLUGIN_URL', plugins_url( '', __FILE__ ) );
 
+            // Functions
+            require_once WOOLU_PLUGIN_PATH . '/includes/functions.php';
+
+            if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                require_once WOOLU_PLUGIN_PATH . '/includes/functions-debug.php';
+            }
+
             // Running Modules
             foreach ( $this->modules as $module_slug => $module ) {
                 // Run Module: before anything

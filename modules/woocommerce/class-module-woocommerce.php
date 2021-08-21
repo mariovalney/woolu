@@ -35,6 +35,10 @@ if ( ! class_exists( 'WOOLU_Module_Woocommerce' ) ) {
             }
 
             $this->includes = array(
+                'traits/trait-has-actions',
+                'traits/trait-has-urls',
+                'api/class-woolu-api-auth',
+                'class-woolu-integration',
             );
         }
 
@@ -45,6 +49,47 @@ if ( ! class_exists( 'WOOLU_Module_Woocommerce' ) ) {
          * @param    WooLu      $core   The Core object
          */
         public function define_hooks() {
+            $this->core->add_action( 'admin_init', array( $this, 'admin_init' ), 99 );
+
+            if ( class_exists( 'WC_Integration' ) ) {
+                $this->core->add_filter( 'woocommerce_integrations', array( $this, 'woocommerce_integrations' ), 99 );
+            }
+        }
+
+        /**
+         * Action: 'admin_init'
+         *
+         * @return void
+         */
+        public function admin_init() {
+            if ( empty( $_GET['woolu-action'] ) ) {
+                return;
+            }
+
+            $action = sanitize_text_field( $_GET['woolu-action'] );
+
+            // Auth Actions
+            if ( in_array( $action, [ 'auth' ], true ) ) {
+                $auth = new WOOLU_Api_Auth();
+                $action = 'do_' . $action;
+
+                if ( ! method_exists( $auth, $action ) ) {
+                    wp_die( __( 'Invalid action.', 'woolu' ), '', [ 'back_link' => true ] );
+                }
+
+                $auth->$action();
+                return;
+            }
+        }
+
+        /**
+         * Filter: 'woocommerce_integrations'
+         *
+         * @return void
+         */
+        public function woocommerce_integrations( $integrations ) {
+            array_unshift( $integrations, 'WOOLU_Integration' );
+            return $integrations;
         }
 
     }
